@@ -159,16 +159,17 @@ jobs:
 
       - name: Download Lockfile Artifact
         if: matrix.source_os != 'source'
+        id: lockfile-download
         uses: actions/download-artifact@v7
         with:
           name: ${{ matrix.source_os }}-${{ matrix.compiler }}.conan.lock
-          path: ${{ github.workspace }}/conan.lock
+          path: ${{ github.workspace }}
 
       - name: Run Scanner
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: |-
-            -L ${{ github.workspace }}/conan.lock
+            -L=conan:${{ steps.lockfile-download.outputs.download-path }}
             --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json 
             --format=json
 
