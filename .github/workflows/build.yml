@@ -18,29 +18,26 @@ permissions:
 jobs:
   dependencies:
     runs-on: ${{ matrix.os }}
-    name: Install Dependencies (${{ matrix.os }}, ${{ matrix.cxx }})
+    name: Install Dependencies (${{ matrix.os }}, ${{ matrix.compiler }})
     permissions:
       contents: read
     concurrency:
-      group: Dependencies-${{ matrix.os }}-${{ matrix.cxx }}
+      group: Dependencies-${{ matrix.os }}-${{ matrix.compiler }}
       cancel-in-progress: false
     strategy:
       matrix:
         include:
-          - os: windows-latest
-            cc: CL.exe
-            cxx: CL.exe
           - os: ubuntu-latest
-            cc: clang
-            cxx: clang++
-          - os: ubuntu-latest
+            compiler: gcc
             cc: gcc
             cxx: g++
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+          - os: windows-latest
+            compiler: msvc
       fail-fast: false
-
-    env:
-      CC: ${{ matrix.cc }}
-      CXX: ${{ matrix.cxx }}
     
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -53,10 +50,19 @@ jobs:
         with:
           persist-credentials: false
           
-      - name: Setup Conan
+      - name: Setup Conan (Default Compiler)
         uses: ./.github/actions/setup-conan
         with: 
-          cache-key: ${{ matrix.cc }}
+          cache-key: ${{ matrix.compiler }}
+
+      - name: Setup Conan (Specified Compiler)
+          
+        uses: ./.github/actions/setup-conan
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        with: 
+          cache-key: ${{ matrix.compiler }}
 
       - name: Install Dependencies
         shell: bash
@@ -66,5 +72,5 @@ jobs:
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ matrix.os }}-${{ matrix.cxx }}.cdx.json
-          path: build/generators/sbom/sbom.cdx.json
+          name: sbom-${{ matrix.os }}-${{ matrix.compiler }}.cdx.json
+          path: build/sbom.cdx.json

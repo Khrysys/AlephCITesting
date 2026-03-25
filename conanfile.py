@@ -13,17 +13,17 @@ from conan.tools.sbom import cyclonedx_1_6
 from pathlib import Path
 
 
-def post_generate(conanfile, **kwargs):
+def post_generate(conanfile):
     sbom_cyclonedx_1_6 = cyclonedx_1_6(conanfile)
-    generators_folder = conanfile.generators_folder
-    file_name = "sbom.cdx.json"
-    folder = Path(generators_folder) / "sbom"
+
+    folder = Path("build")
+    file = folder / "sbom.cdx.json"
+
     folder.mkdir(parents=True, exist_ok=True)
-    file = folder / file_name
     with file.open('w') as f:
         json.dump(sbom_cyclonedx_1_6, f, indent=4)
         
-    ConanOutput().success(f"CYCLONEDX CREATED - {conanfile.generators_folder}")
+    ConanOutput().success(f"CYCLONEDX CREATED - {file}")
 
 project_regex_string = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n"""
 
