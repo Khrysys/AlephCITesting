@@ -48,9 +48,13 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+          conan install \
+            -b=missing \
+            -s compiler.cppstd=20 \
+            -s:a build_type=Release \
+            --lockfile-out=${{ github.workspace }}/conan.lock
 
-      - name: Upload SBOM
+      - name: Upload Lockfile Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-default.conan.lock
@@ -110,7 +114,7 @@ jobs:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
 
-      - name: Upload SBOM
+      - name: Upload Lockfile Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ubuntu-latest-${{ matrix.compiler }}.conan.lock
@@ -133,6 +137,7 @@ jobs:
           - source_os: windows-latest
             compiler: default
           - source_os: source
+      fail-fast: false
 
     steps:
       - name: Harden Runner
@@ -146,7 +151,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Download SBOM Artifact
+      - name: Download Lockfile Artifact
         if: matrix.source_os != 'source'
         uses: actions/download-artifact@v7
         with:
