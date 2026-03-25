@@ -36,6 +36,7 @@ jobs:
             cc: clang
             cxx: clang++
           - os: windows-latest
+            cxx: ''
             compiler: MSVC
       fail-fast: false
     
@@ -51,12 +52,13 @@ jobs:
           persist-credentials: false
           
       - name: Setup Conan (Default Compiler)
+        if: matrix.cxx == ''
         uses: ./.github/actions/setup-conan
         with: 
           cache-key: ${{ matrix.compiler }}
 
       - name: Setup Conan (Specified Compiler)
-          
+        if: matrix.cxx != ''
         uses: ./.github/actions/setup-conan
         env:
           CC: ${{ matrix.cc }}
@@ -64,10 +66,20 @@ jobs:
         with: 
           cache-key: ${{ matrix.compiler }}
 
-      - name: Install Dependencies
+      - name: Install Dependencies (Default Compiler)
+        if: matrix.cxx == ''
         shell: bash
         run: |
           conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+
+      - name: Install Dependencies (Specified Compiler)
+        if: matrix.cxx != ''
+        shell: bash
+        run: |
+          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
