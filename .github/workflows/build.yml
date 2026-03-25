@@ -1,0 +1,59 @@
+name: Aleph Build
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull-request:
+    branches:
+      - main
+      - staging
+  schedule:
+    - cron: '45 5 * * *'
+
+permissions: 
+  contents: none
+
+jobs:
+  dependencies:
+    runs-on: ${{ matrix.os }}
+    name: Install Dependencies (${{ matrix.os }}, ${{ matrix.cxx }})
+    permissions:
+      contents: read
+    concurrency:
+      group: Dependencies-${{ matrix.os }}-${{ matrix.cxx }}
+      cancel-in-progress: false
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            cc: CL.exe
+            cxx: CL.exe
+          - os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+          - os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+      fail-fast: false
+    
+    steps:
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        with: 
+          cache-key: ${{ matrix.cxx }}
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.os }}-${{ matrix.cxx }}.cdx.json
+          path: build/generators/sbom/sbom.cdx.json
