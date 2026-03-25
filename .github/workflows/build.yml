@@ -18,26 +18,16 @@ permissions:
 jobs:
   dependencies:
     runs-on: ${{ matrix.os }}
-    name: Install Dependencies (${{ matrix.os }}, ${{ matrix.compiler }})
+    name: Install Dependencies (${{ matrix.os }})
     permissions:
       contents: read
     concurrency:
-      group: Dependencies-${{ matrix.os }}-${{ matrix.compiler }}
+      group: Dependencies-${{ matrix.os }}-default
       cancel-in-progress: false
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            compiler: gcc
-            cc: gcc
-            cxx: g++
-          - os: ubuntu-latest
-            compiler: clang
-            cc: clang
-            cxx: clang++
           - os: windows-latest
-            cxx: ''
-            compiler: MSVC
       fail-fast: false
     
     steps:
@@ -50,15 +40,58 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-          
-      - name: Setup Conan (Default Compiler)
-        if: matrix.cxx == ''
+
+      - name: Setup Conan
         uses: ./.github/actions/setup-conan
         with: 
-          cache-key: ${{ matrix.compiler }}
+          cache-key: ${{ runner.os }}
 
-      - name: Setup Conan (Specified Compiler)
-        if: matrix.cxx != ''
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.os }}-default.cdx.json
+          path: ${{ github.workspace }}/build/sbom.cdx.json
+
+  dependencies-linux:
+    runs-on: ubuntu-latest
+    name: Install Dependencies (ubuntu-latest, ${{ matrix.compiler }})
+    permissions:
+      contents: read
+    concurrency:
+      group: Dependencies-ubuntu-latest-${{ matrix.compiler }}
+      cancel-in-progress: false
+    strategy:
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+      fail-fast: false
+    
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+ 
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install Ninja
+        shell: bash
+        run: apt-get install -y ninja-build
+
+      - name: Setup Conan
         uses: ./.github/actions/setup-conan
         env:
           CC: ${{ matrix.cc }}
@@ -66,17 +99,10 @@ jobs:
         with: 
           cache-key: ${{ matrix.compiler }}
 
-      - name: Install Dependencies (Default Compiler)
-        if: matrix.cxx == ''
+      - name: Install Dependencies
         shell: bash
         run: |
-          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
-
-      - name: Install Dependencies (Specified Compiler)
-        if: matrix.cxx != ''
-        shell: bash
-        run: |
-          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release
+          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
@@ -84,5 +110,5 @@ jobs:
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ matrix.os }}-${{ matrix.compiler }}.cdx.json
+          name: sbom-ubuntu-latest-${{ matrix.compiler }}.cdx.json
           path: ${{ github.workspace }}/build/sbom.cdx.json
