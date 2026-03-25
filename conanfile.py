@@ -16,7 +16,7 @@ from pathlib import Path
 def post_generate(conanfile):
     sbom_cyclonedx_1_6 = cyclonedx_1_6(conanfile)
 
-    folder = Path("build")
+    folder = Path(__file__).parent / "build"
     file = folder / "sbom.cdx.json"
 
     folder.mkdir(parents=True, exist_ok=True)
