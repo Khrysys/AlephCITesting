@@ -168,20 +168,55 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: |
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json \
-            --format=json
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json --format=json
 
       - name: Run Reporter
         uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with: 
           scan-args: |
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif \
-            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json \
-            --gh-annotations=false \
-            --fail-on-vuln=false 
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json --gh-annotations=false --fail-on-vuln=false 
 
       - name: "Upload to code-scanning"
-        if: "${{ !cancelled() }}"
         uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
           sarif_file: ${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif
+
+  build:
+    runs-on: ${{ matrix.os }}
+    name: Build Aleph (${{ matrix.os }})
+    needs:
+      - dependencies
+    permissions:
+      contents: read
+    concurrency:
+      group: Build-${{ matrix.os }}-default-${{ github.ref }}
+      cancel-in-progress: false
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+      fail-fast: false
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+ 
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
+        with: 
+          cache-key: default
+
+      - name: Build Aleph
+        shell: bash
+        run: |
+          conan build . \
+            -s compiler.cppstd=20 \
+            -s:a build_type=Release
+    
