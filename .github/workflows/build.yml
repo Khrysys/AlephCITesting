@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - staging
   pull_request:
     branches:
       - main
@@ -54,8 +53,8 @@ jobs:
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ matrix.os }}-default.cdx.json
-          path: ${{ github.workspace }}/build/sbom.cdx.json
+          name: ${{ matrix.os }}-default.conan.lock
+          path: ${{ github.workspace }}/conan.lock
 
   dependencies-linux:
     runs-on: ubuntu-latest
@@ -63,7 +62,7 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: Dependencies-ubuntu-latest-${{ matrix.compiler }}
+      group: Dependencies-ubuntu-latest-${{ matrix.compiler }}-${{ github.ref }}
       cancel-in-progress: false
     strategy:
       matrix:
@@ -77,12 +76,12 @@ jobs:
       fail-fast: false
     
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
         with:
           egress-policy: audit
  
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
@@ -102,7 +101,11 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          conan install -b=missing -s compiler.cppstd=20 -s:a build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
+          conan install -b=missing \
+            -s compiler.cppstd=20 \
+            -s:a build_type=Release \
+            -c tools.cmake.cmaketoolchain:generator=Ninja \
+            --lockfile-out=${{ github.workspace }}/conan.lock
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
@@ -110,5 +113,64 @@ jobs:
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-ubuntu-latest-${{ matrix.compiler }}.cdx.json
-          path: ${{ github.workspace }}/build/sbom.cdx.json
+          name: ubuntu-latest-${{ matrix.compiler }}.conan.lock
+          path: ${{ github.workspace }}/conan.lock
+
+  osv-scanner:
+    runs-on: ubuntu-latest
+    name: OSV Scanner
+    needs: 
+      - dependencies
+      - dependencies-linux
+
+    strategy:
+      matrix:
+        include:
+          - source_os: ubuntu-latest
+            compiler: gcc
+          - source_os: ubuntu-latest
+            compiler: clang
+          - source_os: windows-latest
+            compiler: default
+          - source_os: source
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+ 
+      - name: Checkout
+        if: matrix.source_os == 'source'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Download SBOM Artifact
+        if: matrix.source_os != 'source'
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ matrix.source_os }}-${{ matrix.compiler }}.conan.lock
+          path: ./
+
+      - name: Run Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
+        with:
+          scan-args: |
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json
+            --format=json
+
+      - name: Run Reporter
+        uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
+        with: 
+          scan-args: |
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif
+            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json
+            --gh-annotations=false
+            --fail-on-vuln=false
+
+      - name: "Upload to code-scanning"
+        if: "${{ !cancelled() }}"
+        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
+        with:
+          sarif_file: ${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif

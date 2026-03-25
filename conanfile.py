@@ -12,19 +12,6 @@ from conan.tools.build import check_min_cppstd
 from conan.tools.sbom import cyclonedx_1_6
 from pathlib import Path
 
-
-def post_generate(conanfile):
-    sbom_cyclonedx_1_6 = cyclonedx_1_6(conanfile)
-
-    folder = Path(__file__).parent / "build"
-    file = folder / "sbom.cdx.json"
-
-    folder.mkdir(parents=True, exist_ok=True)
-    with file.open('w') as f:
-        json.dump(sbom_cyclonedx_1_6, f, indent=4)
-        
-    ConanOutput().success(f"CYCLONEDX CREATED - {file}")
-
 project_regex_string = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n"""
 
 class AlephConan(ConanFile):
@@ -52,7 +39,6 @@ class AlephConan(ConanFile):
         deps.generate()
         tc = CMakeToolchain(self)
         tc.generate()
-        post_generate(self)
 
     def layout(self):
         cmake_layout(self)
