@@ -31,7 +31,7 @@ class AlephConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     default_options = {
-        "boost/*:without_cobalt=True"
+        "boost/*:without_cobalt": True
     }
 
     def build(self):
