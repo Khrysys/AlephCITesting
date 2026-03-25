@@ -162,30 +162,14 @@ jobs:
         id: lockfile-download
         uses: actions/download-artifact@v7
         with:
-          name: ${{ matrix.source_os }}-${{ matrix.compiler }}.conan.lock
+          pattern: "*-*.conan.lock"
           path: ${{ github.workspace }}
 
-      - name: Run Scanner
-        uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
-        with:
-          scan-args: |-
-            -L=conan:${{ steps.lockfile-download.outputs.download-path }}
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json 
-            --format=json
+      - name: Print directory
+        shell: bash
+        run: |
+          ls ${{ steps.lockfile-download.outputs.download-path }}
 
-      - name: Run Reporter
-        uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
-        with: 
-          scan-args: |-
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif 
-            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json 
-            --gh-annotations=false 
-            --fail-on-vuln=false 
-
-      - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
-        with:
-          sarif_file: ${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif
 
   build:
     runs-on: ${{ matrix.os }}
