@@ -30,6 +30,10 @@ project_regex_string = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n
 class AlephConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
+    default_options = {
+        "boost/*:without_cobalt=True"
+    }
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
