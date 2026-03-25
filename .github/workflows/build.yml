@@ -126,7 +126,13 @@ jobs:
     needs: 
       - dependencies
       - dependencies-linux
-
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    concurrency:
+      group: OSV-Scanner-${{matrix.source_os}}-${{ matrix.compiler }}-${{ github.ref }}
+      cancel-in-progress: false
     strategy:
       matrix:
         include:
@@ -162,17 +168,17 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: |
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json \
             --format=json
 
       - name: Run Reporter
         uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with: 
           scan-args: |
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif
-            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json
-            --gh-annotations=false
-            --fail-on-vuln=false
+            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif \
+            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json \
+            --gh-annotations=false \
+            --fail-on-vuln=false 
 
       - name: "Upload to code-scanning"
         if: "${{ !cancelled() }}"
