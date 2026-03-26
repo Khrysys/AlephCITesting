@@ -64,21 +64,28 @@ namespace aleph::platform::allocation {
         return {ptr, size, PageSize::Standard};
 
 #else
-        spdlog::error("Platform does not support large page allocation.");
-        return {nullptr, 0, PageSize::Standard};
+        spdlog::warning("Platform does not support large page allocation.");
+
+        // Fall back to standard pages.
+        void* ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        if (ptr == MAP_FAILED) {
+            spdlog::error("Standard page allocation failed.");
+            return {nullptr, 0, PageSize::Standard};
+        }
+
+        return {ptr, 0, PageSize::Standard};
 #endif
     }
 
     inline auto deallocate(AllocationResult alloc) noexcept -> void {
+        if (alloc.ptr != nullptr) {
 #if BOOST_OS_WINDOWS
-        if (alloc.ptr != nullptr) {
             VirtualFree(alloc.ptr, 0, MEM_RELEASE);
-        }
-#elif BOOST_OS_LINUX
-        if (alloc.ptr != nullptr) {
+#else
             munmap(alloc.ptr, alloc.size);
-        }
 #endif
+        }
     }
 
 }  // namespace aleph::platform::allocation

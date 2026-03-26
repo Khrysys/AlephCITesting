@@ -361,12 +361,12 @@ jobs:
             build-mode: none
  
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
         with:
           egress-policy: audit
  
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
@@ -395,3 +395,43 @@ jobs:
         uses: github/codeql-action/analyze@0c0c5dc2f136b98cb0537075ccfa21f94cd9a63e # v2.24.3
         with:
           category: "/language:${{matrix.language}}"
+
+  cache-cleanup:
+    name: Clean Conan Cache (${{ matrix.title-name }})
+    runs-on: ${{ matrix.os }}
+    needs:
+      - build
+      - build-linux
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            title-name: ubuntu-latest, gcc
+          - os: ubuntu-latest
+            compiler: clang
+            title-name: ubuntu-latest, clang
+          - os: windows-latest
+            compiler: default
+            title-name: windows-latest
+          - os: macos-latest
+            compiler: default
+            title-name: macos-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+ 
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
+        with:
+          cache-key: ${{ matrix.compiler }}
