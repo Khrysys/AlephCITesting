@@ -11,10 +11,10 @@
 
 #include <boost/predef.h>
 
-// Get OS-Specific headers for Large/huge pages support. MacOS is not supported at this moment.
+// Get OS-Specific headers for Large/huge pages support. 
 #if BOOST_OS_WINDOWS
     #include <windows.h>
-#elif BOOST_OS_LINUX
+#elif BOOST_OS_LINUX || BOOST_OS_MACOS
     #include <fstream>
     #include <unistd.h>
 
