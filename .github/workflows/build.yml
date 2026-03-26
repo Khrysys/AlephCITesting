@@ -154,11 +154,11 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: >-
-            -L=conan:${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock
-            -L=conan:${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock
-            -L=conan:${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock
-            -L=requirements.txt:${{ github.workspace }}/docs/requirements.txt
-            -L=requirements.txt:${{ github.workspace }}/.github/requirements/conan.txt
+            -L=conan:ubuntu-latest-gcc.conan.lock
+            -L=conan:ubuntu-latest-clang.conan.lock
+            -L=conan:windows-latest-default.conan.lock
+            -L=requirements.txt:docs/requirements.txt
+            -L=requirements.txt:.github/requirements/conan.txt
             --output=osv-scanner-results.json 
             --format=json
 
@@ -300,7 +300,7 @@ jobs:
         id: download-artifact
         uses: actions/download-artifact@v7
         with:
-          name: ubuntu-latest-build
+          name: build
 
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@24467985494bed9bfc398489b6ec12469beaf4da # v2.17.0
