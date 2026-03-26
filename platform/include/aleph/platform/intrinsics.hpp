@@ -13,7 +13,7 @@
 // ===== Intrinsics Includes =====
 #if BOOST_OS_WINDOWS
     #include <intrin.h>
-#else
+#elif BOOST_ARCH_X86_32 || BOOST_ARCH_X86_64
     #include <x86intrin.h>
 #endif
 
@@ -21,7 +21,7 @@
  * Defined when BMI2 is available on the target platform.
  * Enables hardware-accelerated `pext` via `_pext_u64`.
  */
-#ifdef __BMI2__
+#if (BOOST_ARCH_X86_32 || BOOST_ARCH_X86_64) && defined(__BMI2__)
     #define ALEPH_HAS_BMI2
 #endif
 

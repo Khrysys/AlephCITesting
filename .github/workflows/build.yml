@@ -25,6 +25,7 @@ jobs:
       matrix:
         os: 
           - windows-latest
+          - macos-latest
       fail-fast: false
     
     steps:
@@ -204,6 +205,7 @@ jobs:
       matrix:
         os:
           - windows-latest
+          - macos-latest
       fail-fast: false
 
     steps:
