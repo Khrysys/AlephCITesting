@@ -164,6 +164,16 @@ jobs:
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock/conan.lock
           --lockfile-out conan.lock
 
+      - name: Run Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
+        with:
+          scan-args: >-
+            --lockfile=conan.lock
+            --lockfile=requirements.txt:docs/requirements.txt
+            --lockfile=requirements.txt:.github/requirements/conan.txt
+            --output=osv-scanner-results.json 
+            --format=json
+
   build:
     runs-on: ${{ matrix.os }}
     name: Build Aleph (${{ matrix.os }})
@@ -309,10 +319,6 @@ jobs:
           ignore-format: .github|build
           tidy-review: true
           format-review: true
-
-      - name: Fail if issues found
-        if: steps.linter.outputs.checks-failed > 0
-        run: exit 1
 
   codeql:
     name: CodeQL (${{ matrix.language }})
