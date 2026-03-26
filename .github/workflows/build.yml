@@ -159,9 +159,9 @@ jobs:
         shell: bash
         run: >-
           conan lock merge 
-          --lockfile ubuntu-latest-gcc.conan.lock/conan.lock
-          --lockfile ubuntu-latest-clang.conan.lock/conan.lock
-          --lockfile windows-latest-default.conan.lock/conan.lock
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock/conan.lock
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock/conan.lock
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock/conan.lock
           --lockfile-out conan.lock
 
   build:
@@ -249,11 +249,11 @@ jobs:
 
       - name: Build Aleph
         shell: bash
-        run: >-
-          conan build .
-            -s compiler.cppstd=20
-            -s:a build_type=Release
-            -c tools.cmake.cmaketoolchain:generator=Ninja
+        run: |
+          conan build . \
+            -s compiler.cppstd=20 \
+            -s:a build_type=Release \
+            -c tools.cmake.cmaketoolchain:generator=Ninja \
             -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
         env:
           CC: ${{ matrix.cc }}
@@ -283,10 +283,10 @@ jobs:
 
       - name: Build Aleph
         shell: bash
-        run: >-
-          conan build .
-            -s compiler.cppstd=20
-            -s:a build_type=Release
+        run: |
+          conan build . \
+            -s compiler.cppstd=20 \
+            -s:a build_type=Release \
             -c tools.cmake.cmaketoolchain:generator=Ninja 
 
       - name: Run cpp-linter
