@@ -150,15 +150,10 @@ jobs:
           pattern: "*.conan.lock"
           path: ${{ github.workspace }}
 
-      - name: Print directory
-        shell: bash
-        run: |
-          ls ${{ steps.lockfile-download.outputs.download-path }}
-
       - name: Run Scanner
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
-          scan-args: |-
+          scan-args: >-
             -L=conan:${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock
             -L=conan:${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock
             -L=conan:${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock
@@ -170,7 +165,7 @@ jobs:
       - name: Run Reporter
         uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with: 
-          scan-args: |-
+          scan-args: >-
             --output=osv-scanner-results.sarif 
             --new=osv-scanner-results.json 
             --gh-annotations=false 
@@ -272,7 +267,7 @@ jobs:
             -s compiler.cppstd=20 \
             -s:a build_type=Release \
             -c tools.cmake.cmaketoolchain:generator=Ninja \
-            -c "tools.cmake.cmaketoolchain:extra_variables={'EXPORT_COMPILE_COMMANDS':True}"
+            -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
@@ -281,7 +276,7 @@ jobs:
         if: matrix.compiler == 'gcc'
         uses: actions/upload-artifact@v7
         with:
-          name: ubuntu-latest-build
+          name: build
           path: build
     
   cpp-linter:
@@ -302,6 +297,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download Build
+        id: download-artifact
         uses: actions/download-artifact@v7
         with:
           name: ubuntu-latest-build
@@ -320,6 +316,7 @@ jobs:
           files-changed-only: false
           thread-comments: false
           step-summary: true
+          database: ${{ steps.download-artifact.outputs.download-path }}
           tidy-review: true
           format-review: true
 
