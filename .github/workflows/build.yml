@@ -143,6 +143,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
+
       - name: Download Lockfile Artifact
         id: lockfile-download
         uses: actions/download-artifact@v7
@@ -303,8 +306,6 @@ jobs:
         with:
           name: build
 
-      - run: ls ${{ steps.download-artifact.outputs.download-path }}/Release
-
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@24467985494bed9bfc398489b6ec12469beaf4da # v2.17.0
         id: linter
@@ -320,6 +321,7 @@ jobs:
           thread-comments: false
           step-summary: true
           database: ${{ steps.download-artifact.outputs.download-path }}/Release
+          ignore: .github/*|${{ steps.download-artifact.outputs.download-path }}/Release/*
           tidy-review: true
           format-review: true
 
@@ -378,7 +380,6 @@ jobs:
           mode: ${{ matrix.mode }}
           sanitizer: ${{ matrix.sanitizer }}
 
-  
   clusterfuzzlite-code-change:
     name: ClusterFuzzLite (code-change, ${{ matrix.sanitizer }})
     if: false

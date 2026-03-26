@@ -266,8 +266,8 @@ namespace aleph::chess {
             std::array<uint64_t, 6> blackBitboards;  ///< One bitboard per `PieceType` for black,
                                                      ///< indexed by `PieceType` value.
 
-            uint64_t _zobristHash;  ///< Cached Zobrist hash of this position.
-            mutable uint64_t _checkers;     ///< Cached bitboard for the checkers of this position.
+            uint64_t _zobristHash;       ///< Cached Zobrist hash of this position.
+            mutable uint64_t _checkers;  ///< Cached bitboard for the checkers of this position.
 
             mutable uint64_t metadata;  ///< Packed position metadata; see `BoardMetadataFlags`.
             uint64_t __padding;         ///< Unused padding, DO NOT SET.
