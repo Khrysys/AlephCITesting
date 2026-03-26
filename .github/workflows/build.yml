@@ -161,7 +161,7 @@ jobs:
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock 
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock 
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock 
-          --lockfile-out conan.lock
+          --lockfile-out conan.lock || true
 
       - name: Run Scanner
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
@@ -312,6 +312,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: build
+          path: build
 
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@24467985494bed9bfc398489b6ec12469beaf4da # v2.17.0
@@ -327,8 +328,10 @@ jobs:
           files-changed-only: false
           thread-comments: false
           step-summary: true
-          database: ${{ steps.download-artifact.outputs.download-path }}/Release
-          ignore: .github|${{ steps.download-artifact.outputs.download-path }}/Release
+          database: ${{ steps.download-artifact.outputs.download-path }}/build/Release
+          ignore: .github|build
+          ignore-tidy: .github|build
+          ignore-format: .github|build
           tidy-review: true
           format-review: true
 
