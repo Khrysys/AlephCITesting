@@ -139,13 +139,11 @@ jobs:
           egress-policy: audit
  
       - name: Checkout
-        if: matrix.source_os == 'source'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
       - name: Download Lockfile Artifact
-        if: matrix.source_os != 'source'
         id: lockfile-download
         uses: actions/download-artifact@v7
         with:
@@ -166,22 +164,22 @@ jobs:
             -L=conan:${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock
             -L=requirements.txt:${{ github.workspace }}/docs/requirements.txt
             -L=requirements.txt:${{ github.workspace }}/.github/requirements/conan.txt
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json 
+            --output=osv-scanner-results.json 
             --format=json
 
       - name: Run Reporter
         uses: google/osv-scanner-action/osv-reporter-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with: 
           scan-args: |-
-            --output=${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif 
-            --new=${{ matrix.source_os }}-${{ matrix.compiler }}-results.json 
+            --output=osv-scanner-results.sarif 
+            --new=osv-scanner-results.json 
             --gh-annotations=false 
             --fail-on-vuln=false 
 
       - name: "Upload to code-scanning"
         uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
-          sarif_file: ${{ matrix.source_os }}-${{ matrix.compiler }}-results.sarif
+          sarif_file: osv-scanner-results.sarif
 
 
   build:
@@ -303,6 +301,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Download Build
+        uses: actions/download-artifact@v7
+        with:
+          name: ubuntu-latest-build
+
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@24467985494bed9bfc398489b6ec12469beaf4da # v2.17.0
         id: linter
@@ -314,7 +317,7 @@ jobs:
           tidy-checks: 'cppcoreguidelines-*'
           version: '22'
           verbosity: 'info'
-          files-changed-only: true
+          files-changed-only: false
           thread-comments: false
           step-summary: true
           tidy-review: true
