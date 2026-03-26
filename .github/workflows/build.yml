@@ -23,8 +23,9 @@ jobs:
       cancel-in-progress: false
     strategy:
       matrix:
-        include:
-          - os: windows-latest
+        os: 
+          - windows-latest
+          - macos-latest
       fail-fast: false
     
     steps:
@@ -162,6 +163,7 @@ jobs:
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock/conan.lock
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock/conan.lock
           --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock/conan.lock
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/macos-latest-default.conan.lock/conan.lock
           --lockfile-out conan.lock
 
       - name: Run Scanner
@@ -201,8 +203,9 @@ jobs:
       cancel-in-progress: false
     strategy:
       matrix:
-        include:
-          - os: windows-latest
+        os:
+          - windows-latest
+          - macos-latest
       fail-fast: false
 
     steps:
