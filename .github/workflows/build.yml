@@ -148,17 +148,16 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           pattern: "*.conan.lock"
-          path: ${{ github.workspace }}
 
       - name: Run Scanner
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: >-
-            -L=conan.lock:ubuntu-latest-gcc.conan.lock
-            -L=conan.lock:ubuntu-latest-clang.conan.lock
-            -L=conan.lock:windows-latest-default.conan.lock
-            -L=requirements.txt:docs/requirements.txt
-            -L=requirements.txt:.github/requirements/conan.txt
+            --lockfile=ubuntu-latest-gcc.conan.lock
+            --lockfile=ubuntu-latest-clang.conan.lock
+            --lockfile=windows-latest-default.conan.lock
+            --lockfile=requirements.txt:docs/requirements.txt
+            --lockfile=requirements.txt:.github/requirements/conan.txt
             --output=osv-scanner-results.json 
             --format=json
 
@@ -316,7 +315,7 @@ jobs:
           files-changed-only: false
           thread-comments: false
           step-summary: true
-          database: ${{ steps.download-artifact.outputs.download-path }}/Release
+          database: ${{ steps.download-artifact.outputs.download-path }}/build/Release
           tidy-review: true
           format-review: true
 
