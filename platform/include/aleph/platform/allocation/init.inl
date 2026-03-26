@@ -98,13 +98,11 @@ namespace aleph::platform::allocation {
             SYSTEM_INFO si;
             GetSystemInfo(&si);
             return static_cast<std::size_t>(si.dwPageSize);
-#elif BOOST_OS_LINUX
+#else
             if (isHugePagesAvailable()) {
                 return static_cast<std::size_t>(2 * 1024 * 1024);
             }
             return static_cast<std::size_t>(sysconf(_SC_PAGESIZE));
-#else
-            return static_cast<std::size_t>(4096);
 #endif
         }();
         return page_size;
