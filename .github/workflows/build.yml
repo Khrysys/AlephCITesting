@@ -152,7 +152,7 @@ jobs:
         with:
           pattern: "*.conan.lock"
 
-      - run: ls ${{ steps.lockfile-download.outputs.download-path }}
+      - run: ls -l ${{ steps.lockfile-download.outputs.download-path }}
 
       - name: Merge Lockfiles
         shell: bash
@@ -186,7 +186,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
           sarif_file: osv-scanner-results.sarif
-
 
   build:
     runs-on: ${{ matrix.os }}
@@ -307,6 +306,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Setup Conan
+        uses: ./.github/actions/setup-conan
+        with: 
+          cache-key: gcc
+        
       - name: Download Build
         id: download-artifact
         uses: actions/download-artifact@v7
@@ -436,7 +440,6 @@ jobs:
           mode: code-change
           sanitizer: ${{ matrix.sanitizer }}
 
-  
   codeql:
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
@@ -473,6 +476,8 @@ jobs:
       - name: Setup Conan
         if: matrix.language == 'c-cpp'
         uses: ./.github/actions/setup-conan
+        with:
+          cache-key: gcc
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@0c0c5dc2f136b98cb0537075ccfa21f94cd9a63e # v2.24.3
