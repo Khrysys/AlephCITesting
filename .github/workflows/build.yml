@@ -153,9 +153,9 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
         with:
           scan-args: >-
-            --lockfile=ubuntu-latest-gcc.conan.lock
-            --lockfile=ubuntu-latest-clang.conan.lock
-            --lockfile=windows-latest-default.conan.lock
+            --lockfile=conan:ubuntu-latest-gcc.conan.lock
+            --lockfile=conan:ubuntu-latest-clang.conan.lock
+            --lockfile=conan:windows-latest-default.conan.lock
             --lockfile=requirements.txt:docs/requirements.txt
             --lockfile=requirements.txt:.github/requirements/conan.txt
             --output=osv-scanner-results.json 
