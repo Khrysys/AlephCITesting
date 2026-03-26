@@ -435,3 +435,8 @@ jobs:
         uses: ./.github/actions/setup-conan
         with:
           cache-key: ${{ matrix.compiler }}
+
+      - name: Clean Cache
+        shell: bash
+        run: |
+          conan remove * --lru=1w
