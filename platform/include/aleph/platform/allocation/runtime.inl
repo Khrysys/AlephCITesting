@@ -64,7 +64,7 @@ namespace aleph::platform::allocation {
         return {ptr, size, PageSize::Standard};
 
 #else
-        spdlog::warning("Platform does not support large page allocation.");
+        spdlog::warn("Platform does not support large page allocation.");
 
         // Fall back to standard pages.
         void* ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
