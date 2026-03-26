@@ -154,7 +154,12 @@ jobs:
 
       - name: Merge Lockfiles
         shell: bash
-        run: conan lock merge --lockfile ubuntu-latest-gcc.conan.lock --lockfile ubuntu-latest-clang.conan.lock --lockfile windows-latest-default.conan.lock --lockfile-out conan.lock
+        run: >-
+          conan lock merge 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock 
+          --lockfile-out conan.lock
 
       - name: Run Scanner
         uses: google/osv-scanner-action/osv-scanner-action@8018483926dd235b3013d8c88023e644b9f8e09e # v2.3.3
@@ -321,7 +326,7 @@ jobs:
           thread-comments: false
           step-summary: true
           database: ${{ steps.download-artifact.outputs.download-path }}/Release
-          ignore: .github/*|${{ steps.download-artifact.outputs.download-path }}/Release/*
+          ignore: .github|${{ steps.download-artifact.outputs.download-path }}/Release
           tidy-review: true
           format-review: true
 
