@@ -146,13 +146,23 @@ jobs:
       - name: Setup Conan
         uses: ./.github/actions/setup-conan
 
-      - name: Download Lockfile Artifact
-        id: lockfile-download
+      - name: Download Lockfiles
         uses: actions/download-artifact@v7
         with:
-          pattern: "*.conan.lock"
+          pattern: '*.conan.lock'
+          merge-multiple: true
+          path: ${{ github.workspace }}
 
       - run: ls -R ${{ steps.lockfile-download.outputs.download-path }}
+
+      - name: Merge Lockfiles
+        shell: bash
+        run: >-
+          conan lock merge 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-gcc.conan.lock 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/ubuntu-latest-clang.conan.lock 
+          --lockfile ${{ steps.lockfile-download.outputs.download-path }}/windows-latest-default.conan.lock 
+          --lockfile-out conan.lock
 
   build:
     runs-on: ${{ matrix.os }}
