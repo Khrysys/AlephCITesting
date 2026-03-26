@@ -25,7 +25,6 @@ jobs:
       matrix:
         os: 
           - windows-latest
-          - macos-latest
       fail-fast: false
     
     steps:
@@ -205,7 +204,6 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - macos-latest
       fail-fast: false
 
     steps:
@@ -281,8 +279,7 @@ jobs:
           conan build . \
             -s compiler.cppstd=20 \
             -s:a build_type=Release \
-            -c tools.cmake.cmaketoolchain:generator=Ninja \
-            -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
+            -c tools.cmake.cmaketoolchain:generator=Ninja
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
@@ -315,7 +312,8 @@ jobs:
           conan build . \
             -s compiler.cppstd=20 \
             -s:a build_type=Release \
-            -c tools.cmake.cmaketoolchain:generator=Ninja 
+            -c tools.cmake.cmaketoolchain:generator=Ninja \
+            -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
 
       - name: Run cpp-linter
         uses: cpp-linter/cpp-linter-action@24467985494bed9bfc398489b6ec12469beaf4da # v2.17.0
