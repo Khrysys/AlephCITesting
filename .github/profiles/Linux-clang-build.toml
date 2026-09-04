@@ -26,3 +26,4 @@ boost/*:without_stacktrace=True
 
 [conf]
 tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}
+tools.cmake.cmaketoolchain:generator=Ninja
