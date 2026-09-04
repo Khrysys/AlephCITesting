@@ -14,6 +14,6 @@ runs:
       run: |-
         conan install \
           -b=missing \
-          -pr:h=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml \
-          -pr:b=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml \
+          -pr:h="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml" \
+          -pr:b="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml" \
           --lockfile-out=conan.lock

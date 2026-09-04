@@ -13,5 +13,5 @@ runs:
       shell: bash
       run: |
         conan build . \
-          -pr:h=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml \
-          -pr:b=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml
+          -pr:h="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml" \
+          -pr:b="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml"
