@@ -1,44 +1,25 @@
 #type: ignore
 # Ignore typing for the whole file, since all it does is throw errors on my machine.
 # Easy enough to validate by hand.
-import json
-import os
 import re
 
 from conan import ConanFile
-from conan.api.output import ConanOutput
 from conan.tools.cmake import cmake_layout, CMake, CMakeDeps, CMakeToolchain
 from conan.tools.build import check_min_cppstd
-from conan.tools.sbom import cyclonedx_1_6
 from pathlib import Path
 
-project_regex_string = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n"""
+PROJECT_REGEX_STRING = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n"""
 
 class AlephConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
-    default_options = {
-        "boost/*:without_cobalt": True
+    options = {
+        'reproducible_build': [True, False]
     }
 
-    def build(self):
-        cmake = CMake(self)
-        cmake.configure()
-        cmake.build()
-        cmake.test()
-
-    def build_requirements(self):
-        self.tool_requires('cmake/4.2.1')
-        self.tool_requires("b2/5.x", override=True)
-
-        self.test_requires('gtest/1.17.0')
-        self.test_requires('benchmark/1.9.4')
-
-    def generate(self):
-        deps = CMakeDeps(self)
-        deps.generate()
-        tc = CMakeToolchain(self)
-        tc.generate()
+    default_options = {
+        'reproducible_build': False
+    }
 
     def layout(self):
         cmake_layout(self)
@@ -47,7 +28,7 @@ class AlephConan(ConanFile):
         cmake = Path(self.recipe_folder) / "CMakeLists.txt"
         content = cmake.read_text(encoding="utf-8")
 
-        m = re.search(project_regex_string, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
+        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
 
         if not m:
             raise RuntimeError("Could not extract project name from CMakeLists.txt")
@@ -58,25 +39,53 @@ class AlephConan(ConanFile):
         cmake = Path(self.recipe_folder) / "CMakeLists.txt"
         content = cmake.read_text(encoding="utf-8")
 
-        m = re.search(project_regex_string, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
+        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
 
         if not m:
             raise RuntimeError("Could not extract version from project() in CMakeLists.txt")
 
         self.version = m.group(2)
 
+    def build(self):
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
+        cmake.test()
+
+    def build_requirements(self):
+        self.tool_requires('cmake/4.2.1')
+        self.tool_requires('ninja/1.13.2')
+
+        self.test_requires('gtest/1.17.0')
+        self.test_requires('benchmark/1.9.4')
+
+    def generate(self):
+        deps = CMakeDeps(self)
+        deps.generate()
+        tc = CMakeToolchain(self)
+        tc.generator = 'Ninja'
+        tc.variables['Aleph_REPRODUCIBLE_BUILDS'] = self.options.reproducible_build
+        tc.generate()
+
+
     def requirements(self):
         self.requires('boost/1.90.0')
         self.requires('fmt/12.1.0')
+        self.requires('half/2.2.0')
         self.requires('libassert/2.2.1')
-        self.requires('spdlog/1.17.0')
+        self.requires('protobuf/6.33.5')
+        self.requires('quill/11.1.0')
+
+        # OS-specific dependencies for various reasons
+        if self.settings.os == 'Linux':
+            self.requires('libnuma/2.0.19')
 
         # Force specific versions for transitive dependencies
         self.requires('b2/5.4.2', override=True)
         self.requires('cpptrace/1.0.4', override=True)
         self.requires('libdwarf/2.1.0', override=True)
         self.requires('zlib/1.3.1', override=True)
-        self.requires(' zstd/1.5.7', override=True)
+        self.requires('zstd/1.5.7', override=True)
             
     def validate(self):
         check_min_cppstd(self, 20)

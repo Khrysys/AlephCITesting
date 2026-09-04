@@ -2,10 +2,9 @@ name: Setup Conan
 description: Install Conan and restore cache
 
 inputs:
-  cache-key:
+  compiler:
     description: Additional cache key component
-    required: false
-    default: ''
+    required: true
 
 runs:
   using: composite
@@ -24,12 +23,29 @@ runs:
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
         path: ~/.conan2/p
-        key: conan-${{runner.os}}-${{ inputs.cache-key }}
+        key: conan-${ {runner.os }}-${{ inputs.compiler }}
         restore-keys: |
-          conan-${{runner.os}}-${{ inputs.cache-key }}-${{ hashFiles('conanfile.py') }}
-          conan-${{ inputs.cache-key }}-
+          conan-${{ runner.os }}-${{ inputs.compiler }}-${{ hashFiles('conanfile.py') }}
+          conan-${{ inputs.compiler }}-
           conan--
 
     - name: Detect Conan profile
       shell: bash
       run: conan profile detect --force
+      env:
+        CC: |-
+          ${{ 
+            case(
+              inputs.compiler == 'clang', 'clang',
+              inputs.compiler == 'gcc', 'gcc',
+              ''
+            ) 
+          }}
+        CXX: |-
+          ${{ 
+            case(
+              inputs.compiler == 'clang', 'clang++',
+              inputs.compiler == 'gcc', 'g++',
+              ''
+            ) 
+          }}

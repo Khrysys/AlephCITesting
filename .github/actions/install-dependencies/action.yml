@@ -1,0 +1,49 @@
+name: Install Dependencies
+description: Installs all dependencies for Aleph
+
+inputs:
+  compiler: 
+    description: 
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install Dependencies
+      if: runner.os != 'ubuntu-latest'
+      shell: bash
+      run: |-
+        conan install \
+          -b=missing \
+          -s compiler.cppstd=20 \
+          -s:a build_type=Release \
+          --lockfile-out=conan.lock
+
+    - name: Install Dependencies (Linux)
+      if: runner.os == 'ubuntu-latest'
+      shell: bash
+      run: |-
+        conan install \
+          -b=missing \
+          -s compiler.cppstd=20 \
+          -s:a build_type=Release \
+          --lockfile-out=conan.lock
+      env:
+        CC: |-
+          ${{ 
+            case(
+              inputs.compiler == 'clang', 'clang',
+              inputs.compiler == 'gcc', 'gcc',
+              ''
+            ) 
+          }}
+        CXX: |-
+          ${{ 
+            case(
+              inputs.compiler == 'clang', 'clang++',
+              inputs.compiler == 'gcc', 'g++',
+              ''
+            ) 
+          }}
+
+  
