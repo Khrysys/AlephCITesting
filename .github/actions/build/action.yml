@@ -10,44 +10,8 @@ runs:
   using: composite
   steps:
     - name: Build
-      if: runner.os != 'ubuntu-latest'
       shell: bash
       run: |
         conan build . \
-          -s compiler.cppstd=20 \
-          -s:a build_type=Release \
-          -o "boost/*:without_cobalt=True" \
-          -o "boost/*:without_cobalt_io=True" \
-          -o "boost/*:without_locale=True" \
-          -o "boost/*:without_stacktrace=True" \
-          -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
-        
-    - name: Build (Linux)
-      if: runner.os == 'ubuntu-latest'
-      shell: bash
-      run: |
-        conan build . \
-          -s compiler.cppstd=20 \
-          -s:a build_type=Release \
-          -o "boost/*:without_cobalt=True" \
-          -o "boost/*:without_cobalt_io=True" \
-          -o "boost/*:without_locale=True" \
-          -o "boost/*:without_stacktrace=True" \
-          -c "tools.cmake.cmaketoolchain:extra_variables={'CMAKE_EXPORT_COMPILE_COMMANDS':True}"
-      env:
-        CC: |-
-          ${{ 
-            case(
-              inputs.compiler == 'clang', 'clang',
-              inputs.compiler == 'gcc', 'gcc',
-              ''
-            ) 
-          }}
-        CXX: |-
-          ${{ 
-            case(
-              inputs.compiler == 'clang', 'clang++',
-              inputs.compiler == 'gcc', 'g++',
-              ''
-            ) 
-          }}
+          -pr:h=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml \ 
+          -pr:b=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml 

@@ -30,6 +30,12 @@ runs:
           conan--
 
     - name: Detect Conan profile
+      if: runner.os != 'ubuntu-latest'
+      shell: bash
+      run: conan profile detect --force
+
+    - name: Detect Conan profile (Linux)
+      if: runner.os == 'ubuntu-latest'
       shell: bash
       run: conan profile detect --force
       env:

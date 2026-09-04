@@ -10,40 +10,10 @@ runs:
   using: composite
   steps:
     - name: Install Dependencies
-      if: runner.os != 'ubuntu-latest'
       shell: bash
       run: |-
         conan install \
           -b=missing \
-          -s compiler.cppstd=20 \
-          -s:a build_type=Release \
+          -pr:h=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml \ 
+          -pr:b=${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml \ 
           --lockfile-out=conan.lock
-
-    - name: Install Dependencies (Linux)
-      if: runner.os == 'ubuntu-latest'
-      shell: bash
-      run: |-
-        conan install \
-          -b=missing \
-          -s compiler.cppstd=20 \
-          -s:a build_type=Release \
-          --lockfile-out=conan.lock
-      env:
-        CC: |-
-          ${{ 
-            case(
-              inputs.compiler == 'clang', 'clang',
-              inputs.compiler == 'gcc', 'gcc',
-              ''
-            ) 
-          }}
-        CXX: |-
-          ${{ 
-            case(
-              inputs.compiler == 'clang', 'clang++',
-              inputs.compiler == 'gcc', 'g++',
-              ''
-            ) 
-          }}
-
-  
