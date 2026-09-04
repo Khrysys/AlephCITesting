@@ -58,13 +58,6 @@ option(Aleph_BUILD_NATIVE_ARCH "Build with native architecture flags" ON)
 option(Aleph_ENABLE_AVX2  "Enable AVX2"  ON)
 option(Aleph_ENABLE_BMI2  "Enable BMI2"  ON)
 option(Aleph_ENABLE_POPCNT "Enable POPCNT" ON)
-# Build changes
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    option(Aleph_REPRODUCIBLE_BUILDS "Enables compiler flags and disables some macros to make builds reproducible. Requires MSVC Toolset 120 or higher." ON)
-else()
-    message(STATUS "Aleph: Debug builds cannot have reproducible builds.")
-    set(Aleph_REPRODUCIBLE_BUILDS OFF)
-endif()
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------

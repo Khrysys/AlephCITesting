@@ -53,11 +53,11 @@ class AlephConan(ConanFile):
         cmake.test()
 
     def build_requirements(self):
-        self.tool_requires('cmake/4.2.1')
+        self.tool_requires('cmake/4.4.2')
         self.tool_requires('ninja/1.13.2')
 
-        self.test_requires('gtest/1.17.0')
-        self.test_requires('benchmark/1.9.4')
+        self.test_requires('gtest/1.18.0')
+        self.test_requires('benchmark/1.9.5')
 
     def generate(self):
         deps = CMakeDeps(self)
@@ -69,23 +69,15 @@ class AlephConan(ConanFile):
 
 
     def requirements(self):
-        self.requires('boost/1.90.0')
-        self.requires('fmt/12.1.0')
-        self.requires('half/2.2.0')
+        self.requires('boost/1.91.0')
+        self.requires('fmt/12.2.0')
         self.requires('libassert/2.2.1')
-        self.requires('protobuf/6.33.5')
-        self.requires('quill/11.1.0')
 
         # OS-specific dependencies for various reasons
-        if self.settings.os == 'Linux':
-            self.requires('libnuma/2.0.19')
+        # if self.settings.os == 'Linux':
+        #     self.requires('libnuma/2.0.19')
 
         # Force specific versions for transitive dependencies
-        self.requires('b2/5.4.2', override=True)
-        self.requires('cpptrace/1.0.4', override=True)
-        self.requires('libdwarf/2.1.0', override=True)
-        self.requires('zlib/1.3.1', override=True)
-        self.requires('zstd/1.5.7', override=True)
             
     def validate(self):
         check_min_cppstd(self, 20)

@@ -29,7 +29,6 @@ target_include_directories(aleph_chess INTERFACE
 )
 
 target_link_libraries(aleph_chess INTERFACE 
-    spdlog::spdlog
     fmt::fmt
     libassert::assert
 
