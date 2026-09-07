@@ -9,8 +9,8 @@
     #include <windows.h>
     #pragma warning(pop)
 #elif BOOST_OS_LINUX
-    //#include <numa.h>
-    //#include <numaif.h>
+    #include <numa.h>
+    #include <numaif.h>
     #include <pthread.h>
     #include <sched.h>
     #include <fstream>
