@@ -180,6 +180,16 @@ jobs:
         uses: ./.github/actions/setup-conan
         with: 
           compiler: ${{ matrix.compiler }}
+          
+      - name: Download Lockfiles
+        id: lockfile-download
+        uses: actions/download-artifact@v7
+        with:
+          name: '${{ matrix.os }}-${{ matrix.compiler }}.conan.lock'
+
+      - name: Rename Lockfile
+        shell: bash
+        run: mv ${{ matrix.os }}-${{ matrix.compiler }}.conan.lock conan.lock
 
       - name: Build Aleph
         uses: ./.github/actions/build
