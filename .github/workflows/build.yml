@@ -141,7 +141,10 @@ jobs:
     needs:
       - dependencies
     permissions:
+      attestations: write
+      artifact-metadata: write
       contents: read
+      id-token: write
     strategy:
       matrix:
         include: 
@@ -183,6 +186,9 @@ jobs:
         with:
           compiler: ${{ matrix.compiler }}
           conan-home: ${{ steps.conan.outputs.conan-home }}
+
+      - name: Package Aleph
+        uses: ./.github/actions/package
     
   cpp-linter:
     name: C++ Linter
@@ -289,7 +295,7 @@ jobs:
           category: "/language:${{matrix.language}}"
 
   cache-cleanup:
-    name: Clean Conan Cache (${{ matrix.title-name }})
+    name: Clean Conan Cache (${{ matrix.title }})
     runs-on: ${{ matrix.os }}
     needs:
         - build
