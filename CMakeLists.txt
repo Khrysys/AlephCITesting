@@ -60,6 +60,7 @@ endif()
 # Build System Options
 option(Aleph_INSTALL "Adds Aleph files to the install target." ON)
 option(Aleph_PACKAGE "Uses CPack to build a packaging system for ALeph." ON)
+option(Aleph_BUILD_DOCS "Build and install documentation" ON)
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -89,7 +90,9 @@ endif()
 # -----------------------------------------------------------------------------
 
 add_subdirectory(chess)
-add_subdirectory(docs)
+if(Aleph_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
 add_subdirectory(platform)
 
 if(Aleph_INSTALL)
