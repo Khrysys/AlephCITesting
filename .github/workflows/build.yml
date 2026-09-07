@@ -51,12 +51,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-        
-      - name: Set Conan Home (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: echo "CONAN_HOME=D:/.conan2/" >> $GITHUB_ENV
-
+      
       - name: Setup Conan
         uses: ./.github/actions/setup-conan
         with: 
@@ -321,7 +316,6 @@ jobs:
       fail-fast: false
     env:
       CONAN_HOME: ${{ matrix.conan-home }}
-      
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
