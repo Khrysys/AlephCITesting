@@ -28,13 +28,18 @@ jobs:
           - os: windows-latest
             compiler: default
             title: windows-latest
+            conan-home: D:/.conan2
           - os: ubuntu-latest
             compiler: gcc
             title: ubuntu-latest, gcc
+            conan-home: /home/runner/.conan2
           - os: ubuntu-latest
             compiler: clang
             title: ubuntu-latest, clang
+            conan-home: /home/runner/.conan2
       fail-fast: false
+    env:
+      CONAN_HOME: ${{ matrix.conan-home }}
     
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -46,6 +51,11 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+        
+      - name: Set Conan Home (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "CONAN_HOME=D:/.conan2/" >> $GITHUB_ENV
 
       - name: Setup Conan
         uses: ./.github/actions/setup-conan
@@ -143,13 +153,18 @@ jobs:
           - os: windows-latest
             compiler: default
             title: windows-latest
+            conan-home: D:/.conan2
           - os: ubuntu-latest
             compiler: gcc
             title: ubuntu-latest, gcc
+            conan-home: /home/runner/.conan2
           - os: ubuntu-latest
             compiler: clang
             title: ubuntu-latest, clang
+            conan-home: /home/runner/.conan2
       fail-fast: false
+    env:
+      CONAN_HOME: ${{ matrix.conan-home }}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -290,17 +305,23 @@ jobs:
       contents: read
     strategy:
       matrix:
-        include:
-          - os: ubuntu-latest
-            compiler: gcc
-            title-name: ubuntu-latest, gcc
-          - os: ubuntu-latest
-            compiler: clang
-            title-name: ubuntu-latest, clang
+        include: 
           - os: windows-latest
             compiler: default
-            title-name: windows-latest
-
+            title: windows-latest
+            conan-home: D:/.conan2
+          - os: ubuntu-latest
+            compiler: gcc
+            title: ubuntu-latest, gcc
+            conan-home: /home/runner/.conan2
+          - os: ubuntu-latest
+            compiler: clang
+            title: ubuntu-latest, clang
+            conan-home: /home/runner/.conan2
+      fail-fast: false
+    env:
+      CONAN_HOME: ${{ matrix.conan-home }}
+      
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
@@ -320,7 +341,7 @@ jobs:
       - name: Clean Cache
         shell: bash
         run: |
-          conan remove * --lru=1w
+          conan remove "*" --lru=1w -c
 
   release-tag:
       name: Tag on Release
