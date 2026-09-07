@@ -80,9 +80,9 @@ find_package(fmt REQUIRED)
 find_package(libassert REQUIRED)
 
 
-# if(LINUX)
-#     find_package(libnuma REQUIRED)
-# endif()
+if(LINUX)
+    find_package(libnuma REQUIRED)
+endif()
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------

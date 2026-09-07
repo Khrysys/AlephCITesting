@@ -27,9 +27,9 @@ endmacro()
 
 target_link_libraries(aleph_platform PUBLIC Boost::headers fmt::fmt libassert::assert)
 
-# if(libnuma_FOUND)
-#     target_link_libraries(aleph_platform PUBLIC libnuma::libnuma)
-# endif()
+if(libnuma_FOUND)
+    target_link_libraries(aleph_platform PUBLIC libnuma::libnuma)
+endif()
 
 add_subdirectory(benchmarks)
 add_subdirectory(fuzzing)

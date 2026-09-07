@@ -49,8 +49,8 @@ class AlephConan(ConanFile):
         self.requires('libassert/2.2.1')
 
         # OS-specific dependencies for various reasons
-        # if self.settings.os == 'Linux':
-        #     self.requires('libnuma/2.0.19')
+        if self.settings.os == 'Linux':
+            self.requires('libnuma/2.0.19')
 
         # Force specific versions for transitive dependencies
 
