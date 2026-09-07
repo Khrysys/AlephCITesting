@@ -6,6 +6,8 @@ import re
 from conan import ConanFile
 from conan.tools.cmake import cmake_layout, CMake, CMakeDeps, CMakeToolchain
 from conan.tools.build import check_min_cppstd
+from conan.tools.files import copy
+from conan.tools.system.python_manager import PyEnv 
 from pathlib import Path
 
 PROJECT_REGEX_STRING = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n"""
@@ -13,13 +15,8 @@ PROJECT_REGEX_STRING = r"""project\s*\(\s*([a-z]+).*VERSION\s+([^\s]+)\s*\)\s*\n
 class AlephConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
-    options = {
-        'reproducible_build': [True, False]
-    }
-
-    default_options = {
-        'reproducible_build': False
-    }
+    def validate(self):
+        check_min_cppstd(self, 20)
 
     def layout(self):
         cmake_layout(self)
@@ -28,7 +25,7 @@ class AlephConan(ConanFile):
         cmake = Path(self.recipe_folder) / "CMakeLists.txt"
         content = cmake.read_text(encoding="utf-8")
 
-        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
+        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.DOTALL)
 
         if not m:
             raise RuntimeError("Could not extract project name from CMakeLists.txt")
@@ -39,18 +36,23 @@ class AlephConan(ConanFile):
         cmake = Path(self.recipe_folder) / "CMakeLists.txt"
         content = cmake.read_text(encoding="utf-8")
 
-        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.VERBOSE | re.DOTALL)
+        m = re.search(PROJECT_REGEX_STRING, content, re.IGNORECASE | re.DOTALL)
 
         if not m:
             raise RuntimeError("Could not extract version from project() in CMakeLists.txt")
 
         self.version = m.group(2)
 
-    def build(self):
-        cmake = CMake(self)
-        cmake.configure()
-        cmake.build()
-        cmake.test()
+    def requirements(self):
+        self.requires('boost/1.91.0')
+        self.requires('fmt/12.2.0')
+        self.requires('libassert/2.2.1')
+
+        # OS-specific dependencies for various reasons
+        # if self.settings.os == 'Linux':
+        #     self.requires('libnuma/2.0.19')
+
+        # Force specific versions for transitive dependencies
 
     def build_requirements(self):
         self.tool_requires('cmake/4.4.2')
@@ -64,20 +66,20 @@ class AlephConan(ConanFile):
         deps.generate()
         tc = CMakeToolchain(self)
         tc.generator = 'Ninja'
-        tc.variables['Aleph_REPRODUCIBLE_BUILDS'] = self.options.reproducible_build
         tc.generate()
+        pyenv = PyEnv(self)
+        pyenv.install([], ['-r', self.source_folder + '/docs/requirements.txt'])
+        pyenv.generate()
 
+    def build(self):
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
+        cmake.test()
 
-    def requirements(self):
-        self.requires('boost/1.91.0')
-        self.requires('fmt/12.2.0')
-        self.requires('libassert/2.2.1')
+    def package(self):
+        cmake = CMake(self)
+        cmake.install()
 
-        # OS-specific dependencies for various reasons
-        # if self.settings.os == 'Linux':
-        #     self.requires('libnuma/2.0.19')
-
-        # Force specific versions for transitive dependencies
-            
-    def validate(self):
-        check_min_cppstd(self, 20)
+    def export_sources(self):
+        copy(self, 'CODE_OF_CONDUCT.md', self.recipe_folder, self.export_sources_folder)

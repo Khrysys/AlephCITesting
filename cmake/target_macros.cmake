@@ -10,22 +10,20 @@ if(NOT TARGET aleph_definitions)
         target_compile_options(aleph_definitions INTERFACE -Wall -Wextra -Wpedantic)
     endif()
 
-    if(Aleph_REPRODUCIBLE_BUILDS)
-        message(STATUS "Aleph: Attempting to make a reproducible build...")
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_TOOLSET_VERSION LESS 120)
-            message(WARNING "Reproducible builds were enabled, but the MSVC Toolset "
-            "version is less than 120. This version does not have support for `/Brepro`. "
-            "Upgrade or set `Aleph_REPRODUCIBLE_BUILDS=OFF`.")
-        elseif(CMAKE_CXX_COMPILER_ID STREQAL "MSVC")
-            target_compile_options(aleph_definitions INTERFACE /Brepro)
-            target_link_options(aleph_definitions INTERFACE /Brepro)
-            message(STATUS "Aleph: Reproducible build enabled.")
-        else()
-            target_compile_options(aleph_definitions INTERFACE
-                "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=."
-                "-fdebug-prefix-map=${CMAKE_SOURCE_DIR}=."
-            )
-        endif()
+    message(STATUS "Aleph: Attempting to make a reproducible build...")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_TOOLSET_VERSION LESS 120)
+        message(WARNING "Reproducible builds were enabled, but the MSVC Toolset "
+        "version is less than 120. This version does not have support for `/Brepro`. "
+        "Upgrade or set `Aleph_REPRODUCIBLE_BUILDS=OFF`.")
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(aleph_definitions INTERFACE /Brepro)
+        target_link_options(aleph_definitions INTERFACE /Brepro)
+        message(STATUS "Aleph: Reproducible build enabled.")
+    else()
+        target_compile_options(aleph_definitions INTERFACE
+            "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=."
+            "-fdebug-prefix-map=${CMAKE_SOURCE_DIR}=."
+        )
     endif()
 
 endif()
@@ -57,7 +55,7 @@ function(aleph_add_library library_name)
     if(args_INTERFACE)
         add_library(${target_name} INTERFACE ${args_SOURCES})
         target_include_directories(${target_name} INTERFACE "include")
-    message(STATUS "Aleph: Interface module library declared '${target_name}'")
+        message(STATUS "Aleph: Interface module library declared '${target_name}'")
     else()
         if(args_STATIC)
             add_library(${target_name} STATIC ${args_SOURCES})
@@ -68,6 +66,9 @@ function(aleph_add_library library_name)
         endif()
         target_link_libraries(${target_name} PRIVATE aleph_definitions)
         target_include_directories(${target_name} PUBLIC "include")
+        if(Aleph_INSTALL)
+            install(TARGETS ${target_name})
+        endif()
     endif()
     add_library(${alias_name} ALIAS ${target_name})
     message(STATUS "Aleph: Module target declared '${alias_name}'")
@@ -108,8 +109,11 @@ if(Aleph_BUILD_BENCHMARKS)
         target_link_libraries(${benchmark_name}
             PRIVATE
                 ${package}
-                benchmark::benchmark
+                benchmark::benchmark_main
         )
+        if(Aleph_INSTALL)
+            install(TARGETS ${benchmark_name})
+        endif()
     endmacro()
 else()
     macro(aleph_add_benchmark benchmark_name package)

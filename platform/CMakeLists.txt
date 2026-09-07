@@ -31,22 +31,11 @@ target_link_libraries(aleph_platform PUBLIC Boost::headers fmt::fmt libassert::a
 #     target_link_libraries(aleph_platform PUBLIC libnuma::libnuma)
 # endif()
 
-if(Aleph_BUILD_NATIVE_ARCH)
-    # -march=native enables all supported extensions on the build machine,
-    # including BMI2, AVX2, and POPCNT where available.
-    # MSVC has no true native equivalent; /arch:AVX2 is the closest approximation.
-    # On future hardware with AVX-512 or later, the MSVC flag must be updated manually.
-    target_compile_options(aleph_platform PUBLIC
-        $<$<CXX_COMPILER_ID:GNU,Clang>:-march=native>
-        $<$<CXX_COMPILER_ID:MSVC>:/arch:AVX2>
-    )
-else()
-    # Individual feature flags for cross-compilation or controlled builds.
-    # BMI2 flag is empty for MSVC — implied by /arch:AVX2 above if enabled.
-    aleph_arch_option(Aleph_ENABLE_AVX2   -mavx2    /arch:AVX2)
-    aleph_arch_option(Aleph_ENABLE_BMI2   -mbmi2    "")
-    aleph_arch_option(Aleph_ENABLE_POPCNT -mpopcnt  "")
-endif()
 add_subdirectory(benchmarks)
 add_subdirectory(fuzzing)
 add_subdirectory(tests)
+
+if(Aleph_INSTALL)
+    include(GNUInstallDirs)
+    install(DIRECTORY include/aleph DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()

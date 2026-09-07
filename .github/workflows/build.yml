@@ -163,6 +163,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Conan
+        id: conan
         uses: ./.github/actions/setup-conan
         with: 
           compiler: ${{ matrix.compiler }}
@@ -171,6 +172,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           compiler: ${{ matrix.compiler }}
+          conan-home: ${{ steps.conan.outputs.conan-home }}
     
   cpp-linter:
     name: C++ Linter

@@ -35,7 +35,8 @@ endif()
 
 if(DEFINED ENV{LIB_FUZZING_ENGINE})
     option(Aleph_BUILD_FUZZING
-        "Build fuzz targets for the modules within the engine. This option adds fuzzing and may add sanitizers, which would impact performance. "
+        "Build fuzz targets for the modules within the engine. This option adds fuzzing and may add sanitizers, which would impact performance."
+        OFF
     )
 else()
     message(STATUS 
@@ -45,7 +46,10 @@ else()
 endif()
 
 if(TARGET benchmark::benchmark)
-    option(Aleph_BUILD_BENCHMARKS "Build benchmarks for the modules within the engine. Has no impact on the regular usage of the engine." ON)
+    option(Aleph_BUILD_BENCHMARKS 
+        "Build benchmarks for the modules within the engine. Has no impact on the regular usage of the engine." 
+        ON
+    )
 else()
     message(STATUS
         "Aleph: benchmark::benchmark target was not found. Benchmarks are unavailable without it."
@@ -53,11 +57,9 @@ else()
     set(Aleph_BUILD_BENCHMARKS OFF)
 endif()
 
-# Platform architecture changes
-option(Aleph_BUILD_NATIVE_ARCH "Build with native architecture flags" ON)
-option(Aleph_ENABLE_AVX2  "Enable AVX2"  ON)
-option(Aleph_ENABLE_BMI2  "Enable BMI2"  ON)
-option(Aleph_ENABLE_POPCNT "Enable POPCNT" ON)
+# Build System Options
+option(Aleph_INSTALL "Adds Aleph files to the install target." ON)
+option(Aleph_PACKAGE "Uses CPack to build a packaging system for ALeph." ON)
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -75,19 +77,33 @@ find_package(Python REQUIRED COMPONENTS Interpreter)
 
 find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
-find_package(half REQUIRED)
 find_package(libassert REQUIRED)
-find_package(protobuf REQUIRED)
-find_package(quill REQUIRED)
 
 
-if(LINUX)
-    find_package(libnuma REQUIRED)
-endif()
+# if(LINUX)
+#     find_package(libnuma REQUIRED)
+# endif()
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
 add_subdirectory(chess)
+add_subdirectory(docs)
 add_subdirectory(platform)
+
+if(Aleph_INSTALL)
+    install(FILES 
+        CODE_OF_CONDUCT.md
+        CONTRIBUTING.md
+        GOVERNANCE.md
+        LICENSE
+        README.md
+        SECURITY.md
+        DESTINATION .
+    )
+endif()
+
+if(Aleph_PACKAGE)
+    include("cmake/package.cmake")
+endif()

@@ -5,6 +5,10 @@ inputs:
   compiler: 
     description: 
     required: true
+  conan-home:
+    description: 
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -12,6 +16,6 @@ runs:
     - name: Build
       shell: bash
       run: |
-        conan build . \
+        conan build \
           -pr:h="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-host.toml" \
           -pr:b="${{ github.workspace }}/.github/profiles/${{ runner.os }}-${{ inputs.compiler }}-build.toml"

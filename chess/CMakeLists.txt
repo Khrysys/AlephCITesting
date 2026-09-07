@@ -1,3 +1,5 @@
+include("${CMAKE_SOURCE_DIR}/cmake/target_macros.cmake")
+
 set(_generated_header
     "${CMAKE_CURRENT_BINARY_DIR}/include/aleph/chess/generated_tables.inl"
 )
@@ -10,7 +12,7 @@ add_custom_command(
     VERBATIM
 )
 
-add_library(aleph_chess INTERFACE 
+aleph_add_library(Chess INTERFACE SOURCES
     ${_generated_header}
     "include/aleph/chess/attack_tables.hpp"
     "include/aleph/chess/board.hpp"
@@ -19,12 +21,12 @@ add_library(aleph_chess INTERFACE
     "include/aleph/chess/move.hpp"
     "include/aleph/chess/piece.hpp"
     "include/aleph/chess/square.hpp"
+    "include/aleph/chess/zobrist.hpp"
     "include/aleph/chess.hpp"
 )
 unset(_generated_header)
 
-target_include_directories(aleph_chess INTERFACE 
-    "include" 
+target_include_directories(aleph_chess INTERFACE
     "${CMAKE_CURRENT_BINARY_DIR}/include"
 )
 
@@ -34,7 +36,9 @@ target_link_libraries(aleph_chess INTERFACE
 
     Aleph::Platform
 )
-
-add_library(Aleph::Chess ALIAS aleph_chess)
-
 add_subdirectory(tests)
+
+if(Aleph_INSTALL)
+    include(GNUInstallDirs)
+    install(DIRECTORY include/aleph DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()

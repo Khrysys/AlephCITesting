@@ -1,0 +1,16 @@
+name: Package
+description: Package Aleph
+
+runs:
+  using: composite
+  steps:
+    - name: Package
+      shell: bash
+      run: |
+        cd ${{ github.workspace }}/build/Release && cpack
+
+    - name: Upload Binary Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        path: ${{ github.workspace }}/buiild/Release/aleph-*.7z
+        archive: false

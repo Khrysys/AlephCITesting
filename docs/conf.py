@@ -24,7 +24,6 @@ version = ".".join(release.split(".")[:2])  # major.minor only for |version|
 
 extensions = [
     "myst_parser",
-    "sphinx_multiversion",
 ]
 
 source_suffix = {
